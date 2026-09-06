@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out integration
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: home-assistant-duosida-local
       - name: Check out exact library alpha
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: matiaskunin/duosida-local
           ref: v0.1.0a1
