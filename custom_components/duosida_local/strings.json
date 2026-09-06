@@ -1,0 +1,79 @@
+{
+  "title": "Duosida Local",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Duosida Local",
+        "description": "Choose LAN discovery or enter the charger address manually.",
+        "menu_options": {
+          "discover": "Discover on the local network",
+          "manual": "Enter address manually"
+        }
+      },
+      "discover": {
+        "title": "Discovered chargers",
+        "description": "Select the charger to configure.",
+        "data": {"host": "Charger"}
+      },
+      "manual": {
+        "title": "Manual setup",
+        "description": "The integration verifies TCP connectivity and reads the charger identifier before saving.",
+        "data": {"host": "Host or IP address", "port": "TCP port"}
+      },
+      "reconfigure": {
+        "title": "Reconfigure Duosida Local",
+        "description": "Change the network address. The charger identifier must match the existing device.",
+        "data": {"host": "Host or IP address", "port": "TCP port"}
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to the charger.",
+      "invalid_response": "The device replied, but its response is not a supported Duosida protocol message.",
+      "different_device": "The new address belongs to a different charger.",
+      "unknown": "Unexpected error. Check the logs."
+    },
+    "abort": {
+      "already_configured": "This charger is already configured.",
+      "no_devices_found": "No chargers were discovered. Try manual setup.",
+      "discovery_failed": "LAN discovery could not start. Check network permissions or use manual setup."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "state": {"name": "State"},
+      "voltage": {"name": "Voltage"},
+      "current": {"name": "Current"},
+      "power": {"name": "Power"},
+      "total_energy": {"name": "Total energy"},
+      "session_energy": {"name": "Session energy"},
+      "station_temperature": {"name": "Station temperature"},
+      "cp_voltage": {"name": "Control Pilot voltage"},
+      "raw_state": {"name": "Raw state code"},
+      "device_id": {"name": "Device identifier"},
+      "model": {"name": "Model"},
+      "manufacturer": {"name": "Manufacturer"},
+      "firmware": {"name": "Firmware"}
+    },
+    "binary_sensor": {
+      "vehicle_connected": {"name": "Vehicle connected"},
+      "charging": {"name": "Charging"}
+    },
+    "button": {
+      "start": {"name": "Start charging"},
+      "stop": {"name": "Stop charging"}
+    },
+    "number": {
+      "max_current": {"name": "Maximum current"}
+    }
+  },
+  "exceptions": {
+    "command_failed": {"message": "The charger command failed or could not be confirmed."},
+    "whole_amps_required": {"message": "The charger accepts whole amperes only."}
+  },
+  "issues": {
+    "connection_lost": {
+      "title": "Connection to the Duosida charger was lost",
+      "description": "The integration cannot reconnect to the charger at {host}. Verify power, Wi-Fi, IP address and TCP port 9988."
+    }
+  }
+}

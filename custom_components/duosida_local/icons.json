@@ -1,0 +1,23 @@
+{
+  "services": {},
+  "entity": {
+    "sensor": {
+      "state": {"default": "mdi:ev-station"},
+      "cp_voltage": {"default": "mdi:sine-wave"},
+      "raw_state": {"default": "mdi:code-braces"},
+      "device_id": {"default": "mdi:identifier"},
+      "model": {"default": "mdi:ev-station"},
+      "manufacturer": {"default": "mdi:factory"},
+      "firmware": {"default": "mdi:chip"}
+    },
+    "binary_sensor": {
+      "vehicle_connected": {"default": "mdi:ev-plug-type2"},
+      "charging": {"default": "mdi:battery-charging"}
+    },
+    "button": {
+      "start": {"default": "mdi:play-circle-outline"},
+      "stop": {"default": "mdi:stop-circle-outline"}
+    },
+    "number": {"max_current": {"default": "mdi:current-ac"}}
+  }
+}

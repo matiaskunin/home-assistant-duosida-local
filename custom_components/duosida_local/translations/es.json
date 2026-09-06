@@ -1,0 +1,21 @@
+{
+  "title": "Duosida Local",
+  "config": {
+    "step": {
+      "user": {"title": "Configurar Duosida Local", "description": "Elegí descubrimiento por LAN o ingresá la dirección del cargador manualmente.", "menu_options": {"discover": "Descubrir en la red local", "manual": "Ingresar dirección manualmente"}},
+      "discover": {"title": "Cargadores encontrados", "description": "Seleccioná el cargador que querés configurar.", "data": {"host": "Cargador"}},
+      "manual": {"title": "Configuración manual", "description": "La integración comprueba la conexión TCP y lee el identificador antes de guardar.", "data": {"host": "Host o dirección IP", "port": "Puerto TCP"}},
+      "reconfigure": {"title": "Reconfigurar Duosida Local", "description": "Cambiá la dirección de red. El identificador debe coincidir con el dispositivo existente.", "data": {"host": "Host o dirección IP", "port": "Puerto TCP"}}
+    },
+    "error": {"cannot_connect": "No se pudo conectar con el cargador.", "invalid_response": "El dispositivo respondió, pero el mensaje no corresponde a un protocolo Duosida compatible.", "different_device": "La nueva dirección pertenece a otro cargador.", "unknown": "Error inesperado. Revisá los registros."},
+    "abort": {"already_configured": "Este cargador ya está configurado.", "no_devices_found": "No se encontraron cargadores. Probá la configuración manual.", "discovery_failed": "No se pudo iniciar el descubrimiento LAN. Revisá los permisos de red o usá la configuración manual."}
+  },
+  "entity": {
+    "sensor": {"state": {"name": "Estado"}, "voltage": {"name": "Tensión"}, "current": {"name": "Corriente"}, "power": {"name": "Potencia"}, "total_energy": {"name": "Energía total"}, "session_energy": {"name": "Energía de la sesión"}, "station_temperature": {"name": "Temperatura de la estación"}, "cp_voltage": {"name": "Tensión del piloto de control"}, "raw_state": {"name": "Código de estado bruto"}, "device_id": {"name": "Identificador del dispositivo"}, "model": {"name": "Modelo"}, "manufacturer": {"name": "Fabricante"}, "firmware": {"name": "Firmware"}},
+    "binary_sensor": {"vehicle_connected": {"name": "Vehículo conectado"}, "charging": {"name": "Cargando"}},
+    "button": {"start": {"name": "Iniciar carga"}, "stop": {"name": "Detener carga"}},
+    "number": {"max_current": {"name": "Corriente máxima"}}
+  },
+  "exceptions": {"command_failed": {"message": "El comando falló o no se pudo confirmar."}, "whole_amps_required": {"message": "El cargador sólo acepta amperios enteros."}},
+  "issues": {"connection_lost": {"title": "Se perdió la conexión con el cargador Duosida", "description": "La integración no puede reconectarse al cargador en {host}. Verificá la alimentación, Wi-Fi, dirección IP y el puerto TCP 9988."}}
+}

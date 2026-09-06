@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out integration
+        uses: actions/checkout@v4
+        with:
+          path: home-assistant-duosida-local
+      - name: Check out exact library alpha
+        uses: actions/checkout@v4
+        with:
+          repository: matiaskunin/duosida-local
+          ref: v0.1.0a1
+          path: duosida-local
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: "3.14"
+      - run: uv sync --locked --all-groups
+        working-directory: home-assistant-duosida-local
+      - run: uv run ruff format --check .
+        working-directory: home-assistant-duosida-local
+      - run: uv run ruff check .
+        working-directory: home-assistant-duosida-local
+      - run: uv run mypy
+        working-directory: home-assistant-duosida-local
+      - run: uv run pytest
+        working-directory: home-assistant-duosida-local
