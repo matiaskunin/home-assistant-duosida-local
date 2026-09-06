@@ -29,12 +29,15 @@ Home Assistant itself targets Linux and imports the POSIX-only `fcntl` module.
 For local unit tests on Windows, prepend the test-only shim:
 
 ```powershell
-$env:PYTHONPATH = "tests\windows_stubs;."
+$env:PYTHONPATH = "tests\windows_stubs"
 $env:UV_CACHE_DIR = ".uv-cache"
 uv run pytest -p no:cacheprovider
 ```
 
 Ubuntu CI does not use this shim and validates against the real POSIX module.
+Pytest adds the repository root through `pythonpath = ["."]` in
+`pyproject.toml`, so `custom_components` imports do not depend on a shell's
+`PYTHONPATH` setting on either platform.
 The integration CI checks out the matching library tag beside this repository,
 which preserves the same sibling layout used by the local workspace.
 
