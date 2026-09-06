@@ -11,6 +11,10 @@ exactly pinned `duosida-local` GitHub tag.
    `v0.1.0aN`. Do not publish it to PyPI during physical validation.
 2. Update the exact Git tag in the manifest and the integration version to the
    same alpha.
+   Regenerate the integration lockfile with `uv lock` using a sibling library
+   checkout matching that tag, then verify `uv sync --locked --all-groups`.
+   The lockfile records the editable library's development metadata too; changes
+   to its tools can require this refresh even without runtime dependency changes.
 3. Run Ruff, MyPy, Pytest, Hassfest and HACS validation.
 4. Create the integration GitHub pre-release.
 5. Install that release through HACS on the test instance and update the
