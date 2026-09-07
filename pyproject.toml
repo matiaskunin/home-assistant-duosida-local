@@ -41,6 +41,7 @@ explicit_package_bases = true
 namespace_packages = true
 
 [tool.pytest.ini_options]
+pythonpath = ["."]
 addopts = "--strict-config --strict-markers --cov=custom_components.duosida_local --cov-report=term-missing --cov-fail-under=95"
 asyncio_mode = "auto"
 testpaths = ["tests"]
