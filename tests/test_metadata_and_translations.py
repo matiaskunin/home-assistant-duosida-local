@@ -55,7 +55,7 @@ def test_release_metadata_is_aligned() -> None:
     assert library_requirement.url == (
         "git+https://github.com/matiaskunin/duosida-local.git@v0.1.0a1"
     )
-    assert f"ref: v{manifest['version']}" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(
+    assert 'version: "0.12.10"' in (ROOT / ".github" / "workflows" / "ci.yml").read_text(
         encoding="utf-8"
     )
     assert manifest["iot_class"] == "local_push"
