@@ -9,8 +9,10 @@ expected state, observed state and repeat count without recording private IDs.
    approximately 230 V, 0 A and CP near 12 V.
 2. Connect the vehicle without starting; verify vehicle connected and CP near
    9 V.
+   Then disconnect it after a Finished state and verify CP returns near 12 V and
+   vehicle connected turns off even if the state code is briefly stale.
 3. Set maximum current to 6 A. Treat the UI value as assumed, because the charger
-   does not report it back.
+   does not report it back. Confirm measured current rather than the slider.
 4. Start charging. Verify transition to Charging, CP near 6 V and plausible
    voltage/current/power/energy.
 5. Stop and repeat three times. Each call must confirm a non-Charging state.

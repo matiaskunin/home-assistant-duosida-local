@@ -4,7 +4,7 @@ import asyncio
 from collections.abc import AsyncIterator
 from unittest.mock import AsyncMock, patch
 
-from custom_components.duosida_local.const import DOMAIN
+from custom_components.duosida_local.const import CONF_ENERGY_OFFSET, DOMAIN
 from custom_components.duosida_local.diagnostics import async_get_config_entry_diagnostics
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
@@ -63,13 +63,21 @@ class FakeClient:
 
 
 async def _setup_entry(
-    hass: HomeAssistant, identity: ChargerIdentity, status: ChargerStatus
+    hass: HomeAssistant,
+    identity: ChargerIdentity,
+    status: ChargerStatus,
+    *,
+    energy_offset: float = 0.0,
 ) -> tuple[MockConfigEntry, FakeClient]:
     entry = MockConfigEntry(
         domain=DOMAIN,
         title="Duosida test",
         unique_id=identity.device_id,
-        data={CONF_HOST: "192.0.2.10", CONF_PORT: 9988},
+        data={
+            CONF_HOST: "192.0.2.10",
+            CONF_PORT: 9988,
+            CONF_ENERGY_OFFSET: energy_offset,
+        },
     )
     entry.add_to_hass(hass)
     client = FakeClient(identity, status)
@@ -150,6 +158,18 @@ async def test_push_update_changes_entities(
     assert charging_id is not None
     assert (charging_state := hass.states.get(charging_id)) is not None
     assert charging_state.state == "on"
+    await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_total_energy_applies_configured_lifetime_offset(
+    hass: HomeAssistant, identity: ChargerIdentity, status: ChargerStatus
+) -> None:
+    entry, _client = await _setup_entry(hass, identity, status, energy_offset=12_768.0125)
+    registry = er.async_get(hass)
+    entity_id = registry.async_get_entity_id("sensor", DOMAIN, f"{identity.device_id}_total_energy")
+    assert entity_id is not None
+    assert (energy_state := hass.states.get(entity_id)) is not None
+    assert float(energy_state.state) == 13_018.0125
     await hass.config_entries.async_unload(entry.entry_id)
 
 

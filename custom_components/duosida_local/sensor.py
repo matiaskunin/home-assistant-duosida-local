@@ -24,6 +24,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from duosida_local import ChargerIdentity, ChargerStatus
 
+from .const import CONF_ENERGY_OFFSET, DEFAULT_ENERGY_OFFSET
 from .entity import DuosidaEntity
 from .runtime import DuosidaConfigEntry
 
@@ -32,7 +33,7 @@ from .runtime import DuosidaConfigEntry
 class DuosidaSensorDescription(SensorEntityDescription):
     """Describe a status-backed sensor."""
 
-    value_fn: Callable[[ChargerStatus], str | int | float]
+    value_fn: Callable[[ChargerStatus, DuosidaConfigEntry], str | int | float]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -44,7 +45,9 @@ class DuosidaIdentitySensorDescription(SensorEntityDescription):
 
 SENSORS: tuple[DuosidaSensorDescription, ...] = (
     DuosidaSensorDescription(
-        key="state", translation_key="state", value_fn=lambda status: status.state.value
+        key="state",
+        translation_key="state",
+        value_fn=lambda status, _entry: status.state.value,
     ),
     DuosidaSensorDescription(
         key="voltage",
@@ -53,7 +56,7 @@ SENSORS: tuple[DuosidaSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
-        value_fn=lambda status: status.voltage,
+        value_fn=lambda status, _entry: status.voltage,
     ),
     DuosidaSensorDescription(
         key="current",
@@ -62,7 +65,7 @@ SENSORS: tuple[DuosidaSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=2,
-        value_fn=lambda status: status.current,
+        value_fn=lambda status, _entry: status.current,
     ),
     DuosidaSensorDescription(
         key="power",
@@ -71,7 +74,7 @@ SENSORS: tuple[DuosidaSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfPower.WATT,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
-        value_fn=lambda status: status.power,
+        value_fn=lambda status, _entry: status.power,
     ),
     DuosidaSensorDescription(
         key="total_energy",
@@ -80,7 +83,9 @@ SENSORS: tuple[DuosidaSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
         suggested_display_precision=3,
-        value_fn=lambda status: status.total_energy,
+        value_fn=lambda status, entry: (
+            status.total_energy + float(entry.data.get(CONF_ENERGY_OFFSET, DEFAULT_ENERGY_OFFSET))
+        ),
     ),
     DuosidaSensorDescription(
         key="session_energy",
@@ -89,16 +94,17 @@ SENSORS: tuple[DuosidaSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL,
         suggested_display_precision=3,
-        value_fn=lambda status: status.session_energy,
+        value_fn=lambda status, _entry: status.session_energy,
     ),
     DuosidaSensorDescription(
         key="station_temperature",
         translation_key="station_temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
-        value_fn=lambda status: status.station_temperature,
+        value_fn=lambda status, _entry: status.station_temperature,
     ),
     DuosidaSensorDescription(
         key="cp_voltage",
@@ -109,14 +115,14 @@ SENSORS: tuple[DuosidaSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         suggested_display_precision=2,
-        value_fn=lambda status: status.cp_voltage,
+        value_fn=lambda status, _entry: status.cp_voltage,
     ),
     DuosidaSensorDescription(
         key="raw_state",
         translation_key="raw_state",
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        value_fn=lambda status: status.raw_state,
+        value_fn=lambda status, _entry: status.raw_state,
     ),
 )
 
@@ -182,7 +188,7 @@ class DuosidaSensor(DuosidaEntity, SensorEntity):
 
         if self.coordinator.data is None:
             return None
-        return self.entity_description.value_fn(self.coordinator.data)
+        return self.entity_description.value_fn(self.coordinator.data, self._entry)
 
 
 class DuosidaIdentitySensor(DuosidaEntity, SensorEntity):

@@ -9,6 +9,11 @@ and this project uses [Semantic Versioning](https://semver.org/).
 
 - Install the matching `duosida-local` alpha from its pinned GitHub tag instead
   of PyPI during physical validation.
+- Retry UDP discovery and use the charger-advertised address when present.
+- Derive vehicle connection from Control Pilot voltage.
+- Send maximum current with the charger's two-decimal configuration format.
+- Add a configurable lifetime-energy offset without depending on DSCharge.
+- Document Home Assistant's Celsius display-unit configuration.
 
 ## [0.1.0a1] - 2026-09-01
 

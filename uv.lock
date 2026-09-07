@@ -854,7 +854,7 @@ wheels = [
 
 [[package]]
 name = "duosida-local"
-version = "0.1.0a1"
+version = "0.1.0a2"
 source = { editable = "../duosida-local" }
 
 [package.metadata]
@@ -1109,7 +1109,7 @@ wheels = [
 
 [[package]]
 name = "home-assistant-duosida-local"
-version = "0.1.0a1"
+version = "0.1.0a2"
 source = { virtual = "." }
 
 [package.dev-dependencies]
