@@ -15,7 +15,7 @@ dev = [
   "prek==0.5.2",
   "pytest==9.0.3",
   "pytest-cov==7.1.0",
-  "pytest-homeassistant-custom-component==0.13.357",
+  "pytest-homeassistant-custom-component==0.13.363",
   "ruff==0.16.5",
 ]
 
