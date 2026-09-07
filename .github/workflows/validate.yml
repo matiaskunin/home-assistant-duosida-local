@@ -2,6 +2,7 @@ name: Home Assistant validation
 
 on:
   push:
+    branches: [main]
   pull_request:
   schedule:
     - cron: "0 4 * * 1"
@@ -9,6 +10,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: validation-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   hassfest:
@@ -20,6 +25,7 @@ jobs:
   hacs:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v7
       - uses: hacs/action@main
         with:
           category: integration
