@@ -11,10 +11,10 @@ exactly pinned `duosida-local` GitHub tag.
    `v0.1.0aN`. Do not publish it to PyPI during physical validation.
 2. Update the exact Git tag in the manifest and the integration version to the
    same alpha.
-   Regenerate the integration lockfile with `uv lock` using a sibling library
-   checkout matching that tag, then verify `uv sync --locked --all-groups`.
-   The lockfile records the editable library's development metadata too; changes
-   to its tools can require this refresh even without runtime dependency changes.
+   Update the Git dependency in `pyproject.toml` to the same tag and regenerate
+   the lockfile with `uv lock`. Then verify `uv sync --locked --all-groups` in a
+   clean checkout. The lockfile resolves the immutable Git tag, not a sibling
+   development directory.
 3. Run Ruff, MyPy, Pytest, Hassfest and HACS validation.
 4. Create the integration GitHub pre-release.
 5. Install that release through HACS on the test instance and update the
@@ -38,10 +38,14 @@ Ubuntu CI does not use this shim and validates against the real POSIX module.
 Pytest adds the repository root through `pythonpath = ["."]` in
 `pyproject.toml`, so `custom_components` imports do not depend on a shell's
 `PYTHONPATH` setting on either platform.
-The integration CI checks out the matching library tag beside this repository,
-which preserves the same sibling layout used by the local workspace.
+For normal work, `uv sync --locked --all-groups` installs the exact library tag
+recorded in `pyproject.toml`. To exercise uncommitted library edits without
+changing the integration lockfile, clone both repositories as siblings and run
+the desired command with a temporary editable override, for example:
 
-For local development, clone both repositories into sibling directories. The
-`[tool.uv.sources]` override uses `../duosida-local`, so edits can be tested
-together without copying library code into the integration repository. The
-production Home Assistant manifest uses the public Git tag instead.
+```powershell
+uv run --with-editable ..\duosida-local pytest
+```
+
+Do not commit a local-path source or a lockfile generated from one. The
+production manifest and CI both resolve the same immutable public Git tag.
