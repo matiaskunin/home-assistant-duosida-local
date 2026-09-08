@@ -8,6 +8,7 @@ from custom_components.duosida_local.const import CONF_ENERGY_OFFSET, DOMAIN
 from homeassistant.config_entries import SOURCE_RECONFIGURE
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from duosida_local import (
@@ -32,6 +33,14 @@ async def test_user_menu(hass) -> None:
     result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     assert result["type"] is FlowResultType.MENU
     assert result["menu_options"] == ["discover", "manual"]
+
+
+async def test_network_dependency_loads_before_config_flow(hass) -> None:
+    """The manifest dependency used by discovery is available before setup."""
+
+    assert await async_setup_component(hass, "network", {})
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    assert result["type"] is FlowResultType.MENU
 
 
 async def test_manual_success(hass, identity) -> None:

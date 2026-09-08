@@ -8,3 +8,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      home-assistant-test-stack:
+        patterns:
+          - homeassistant
+          - pytest-homeassistant-custom-component
+    ignore:
+      - dependency-name: pytest
