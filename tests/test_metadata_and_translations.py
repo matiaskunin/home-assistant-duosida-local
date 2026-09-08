@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import json
+import tomllib
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any
 
 import yaml
+from custom_components.duosida_local.sensor import SENSORS
+from homeassistant.const import UnitOfTemperature
 from packaging.requirements import Requirement
 
 ROOT = Path(__file__).parents[1]
@@ -48,19 +52,37 @@ def test_translation_trees_and_icons_are_complete() -> None:
 def test_release_metadata_is_aligned() -> None:
     manifest = _json(INTEGRATION / "manifest.json")
     hacs = _json(ROOT / "hacs.json")
-    library_requirement = Requirement(manifest["requirements"][0])
-
-    assert manifest["version"] == "0.1.0a1"
-    assert library_requirement.name == "duosida-local"
-    assert library_requirement.url == (
-        "git+https://github.com/matiaskunin/duosida-local.git@v0.1.0a1"
+    manifest_requirement = Requirement(manifest["requirements"][0])
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    dependency = next(
+        requirement
+        for requirement in project["dependency-groups"]["dev"]
+        if requirement.startswith("duosida-local")
     )
+    library_requirement = Requirement(dependency)
+
+    assert manifest["version"] == "0.1.0a2"
+    assert manifest_requirement.name == library_requirement.name == "duosida-local"
+    assert (
+        manifest_requirement.url
+        == library_requirement.url
+        == ("git+https://github.com/matiaskunin/duosida-local.git@v0.1.0a2")
+    )
+    assert version("duosida-local") == manifest["version"]
+    assert "[tool.uv.sources]" not in (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert 'version: "0.12.10"' in (ROOT / ".github" / "workflows" / "ci.yml").read_text(
         encoding="utf-8"
     )
     assert manifest["iot_class"] == "local_push"
+    assert manifest["dependencies"] == ["network"]
     assert hacs["homeassistant"] == "2026.8.0"
 
     quality_scale = yaml.safe_load((INTEGRATION / "quality_scale.yaml").read_text())
     assert quality_scale["rules"]["test-coverage"] == "done"
     assert quality_scale["rules"]["brands"]["status"] == "todo"
+
+
+def test_temperature_defaults_to_celsius_but_remains_user_overridable() -> None:
+    temperature = next(sensor for sensor in SENSORS if sensor.key == "station_temperature")
+    assert temperature.native_unit_of_measurement == UnitOfTemperature.CELSIUS
+    assert temperature.suggested_unit_of_measurement == UnitOfTemperature.CELSIUS

@@ -4,8 +4,8 @@
     "step": {
       "user": {"title": "Configurar Duosida Local", "description": "Elegí descubrimiento por LAN o ingresá la dirección del cargador manualmente.", "menu_options": {"discover": "Descubrir en la red local", "manual": "Ingresar dirección manualmente"}},
       "discover": {"title": "Cargadores encontrados", "description": "Seleccioná el cargador que querés configurar.", "data": {"host": "Cargador"}},
-      "manual": {"title": "Configuración manual", "description": "La integración comprueba la conexión TCP y lee el identificador antes de guardar.", "data": {"host": "Host o dirección IP", "port": "Puerto TCP"}},
-      "reconfigure": {"title": "Reconfigurar Duosida Local", "description": "Cambiá la dirección de red. El identificador debe coincidir con el dispositivo existente.", "data": {"host": "Host o dirección IP", "port": "Puerto TCP"}}
+      "manual": {"title": "Configuración manual", "description": "La integración comprueba la conexión TCP y lee el identificador antes de guardar.", "data": {"host": "Host o dirección IP", "port": "Puerto TCP", "energy_offset": "Ajuste de energía histórica (kWh)"}},
+      "reconfigure": {"title": "Reconfigurar Duosida Local", "description": "Cambiá la dirección de red o calibrá la energía histórica. El identificador debe coincidir con el dispositivo existente.", "data": {"host": "Host o dirección IP", "port": "Puerto TCP", "energy_offset": "Ajuste de energía histórica (kWh)"}}
     },
     "error": {"cannot_connect": "No se pudo conectar con el cargador.", "invalid_response": "El dispositivo respondió, pero el mensaje no corresponde a un protocolo Duosida compatible.", "different_device": "La nueva dirección pertenece a otro cargador.", "unknown": "Error inesperado. Revisá los registros."},
     "abort": {"already_configured": "Este cargador ya está configurado.", "no_devices_found": "No se encontraron cargadores. Probá la configuración manual.", "discovery_failed": "No se pudo iniciar el descubrimiento LAN. Revisá los permisos de red o usá la configuración manual."}

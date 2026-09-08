@@ -9,6 +9,16 @@ and this project uses [Semantic Versioning](https://semver.org/).
 
 - Install the matching `duosida-local` alpha from its pinned GitHub tag instead
   of PyPI during physical validation.
+- Retry UDP discovery and use the charger-advertised address when present.
+- Derive vehicle connection from Control Pilot voltage.
+- Send maximum current with the charger's two-decimal configuration format.
+- Add a configurable lifetime-energy offset without depending on DSCharge.
+- Document Home Assistant's Celsius display-unit configuration.
+- Resolve CI dependencies from the exact public library Git tag and validate
+  release metadata against the installed distribution.
+- Declare Home Assistant's `network` integration before the config flow loads.
+- Group compatible Home Assistant test-stack updates in Dependabot and keep
+  Pytest pinned while its test plugin requires an exact version.
 
 ## [0.1.0a1] - 2026-09-01
 

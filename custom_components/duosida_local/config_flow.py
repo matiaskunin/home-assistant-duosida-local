@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from ipaddress import ip_interface
 from typing import Any
 
 import voluptuous as vol
+from homeassistant.components import network
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import AbortFlow
 from homeassistant.helpers.selector import (
     NumberSelector,
@@ -19,13 +22,14 @@ from homeassistant.helpers.selector import (
 
 from duosida_local import (
     ChargerIdentity,
+    DiscoveredCharger,
     DuosidaClient,
     DuosidaConnectionError,
     DuosidaError,
     discover_chargers,
 )
 
-from .const import DEFAULT_PORT, DOMAIN
+from .const import CONF_ENERGY_OFFSET, DEFAULT_ENERGY_OFFSET, DEFAULT_PORT, DOMAIN
 
 
 class DuosidaConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -45,10 +49,10 @@ class DuosidaConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             host = user_input[CONF_HOST]
-            return await self._async_validate_and_create(host, DEFAULT_PORT)
+            return await self._async_validate_and_create(host, DEFAULT_PORT, DEFAULT_ENERGY_OFFSET)
 
         try:
-            devices = await discover_chargers(timeout=3.0)
+            devices = await _async_discover_chargers(self.hass)
         except OSError:
             return self.async_abort(reason="discovery_failed")
         choices = {
@@ -80,7 +84,9 @@ class DuosidaConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             try:
                 return await self._async_validate_and_create(
-                    user_input[CONF_HOST], user_input[CONF_PORT]
+                    user_input[CONF_HOST],
+                    user_input[CONF_PORT],
+                    user_input.get(CONF_ENERGY_OFFSET, DEFAULT_ENERGY_OFFSET),
                 )
             except DuosidaConnectionError:
                 errors["base"] = "cannot_connect"
@@ -98,6 +104,14 @@ class DuosidaConfigFlow(ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_HOST): str,
                     vol.Required(CONF_PORT, default=DEFAULT_PORT): NumberSelector(
                         NumberSelectorConfig(min=1, max=65535, mode=NumberSelectorMode.BOX)
+                    ),
+                    vol.Optional(CONF_ENERGY_OFFSET, default=DEFAULT_ENERGY_OFFSET): NumberSelector(
+                        NumberSelectorConfig(
+                            min=-1_000_000,
+                            max=1_000_000,
+                            step=0.001,
+                            mode=NumberSelectorMode.BOX,
+                        )
                     ),
                 }
             ),
@@ -122,6 +136,9 @@ class DuosidaConfigFlow(ConfigFlow, domain=DOMAIN):
                         data_updates={
                             CONF_HOST: user_input[CONF_HOST],
                             CONF_PORT: user_input[CONF_PORT],
+                            CONF_ENERGY_OFFSET: user_input.get(
+                                CONF_ENERGY_OFFSET, DEFAULT_ENERGY_OFFSET
+                            ),
                         },
                     )
             except DuosidaConnectionError:
@@ -139,18 +156,41 @@ class DuosidaConfigFlow(ConfigFlow, domain=DOMAIN):
                     ): NumberSelector(
                         NumberSelectorConfig(min=1, max=65535, mode=NumberSelectorMode.BOX)
                     ),
+                    vol.Optional(
+                        CONF_ENERGY_OFFSET,
+                        default=entry.data.get(CONF_ENERGY_OFFSET, DEFAULT_ENERGY_OFFSET),
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=-1_000_000,
+                            max=1_000_000,
+                            step=0.001,
+                            mode=NumberSelectorMode.BOX,
+                        )
+                    ),
                 }
             ),
             errors=errors,
         )
 
-    async def _async_validate_and_create(self, host: str, port: int) -> ConfigFlowResult:
+    async def _async_validate_and_create(
+        self, host: str, port: int, energy_offset: float
+    ) -> ConfigFlowResult:
         identity = await _async_probe(host, port)
         await self.async_set_unique_id(identity.device_id)
-        self._abort_if_unique_id_configured(updates={CONF_HOST: host, CONF_PORT: port})
+        self._abort_if_unique_id_configured(
+            updates={
+                CONF_HOST: host,
+                CONF_PORT: port,
+                CONF_ENERGY_OFFSET: energy_offset,
+            }
+        )
         return self.async_create_entry(
             title=f"Duosida {identity.model}",
-            data={CONF_HOST: host, CONF_PORT: port},
+            data={
+                CONF_HOST: host,
+                CONF_PORT: port,
+                CONF_ENERGY_OFFSET: energy_offset,
+            },
         )
 
 
@@ -160,3 +200,20 @@ async def _async_probe(host: str, port: int) -> ChargerIdentity:
         return await client.connect()
     finally:
         await client.disconnect()
+
+
+async def _async_discover_chargers(hass: HomeAssistant) -> tuple[DiscoveredCharger, ...]:
+    """Discover using global and adapter-specific IPv4 broadcasts."""
+
+    broadcasts: set[str] = set()
+    for adapter in await network.async_get_adapters(hass):
+        if not adapter["enabled"]:
+            continue
+        for ipv4 in adapter["ipv4"]:
+            interface = ip_interface(f"{ipv4['address']}/{ipv4['network_prefix']}")
+            broadcasts.add(str(interface.network.broadcast_address))
+    broadcasts.discard("255.255.255.255")
+    return await discover_chargers(
+        timeout=4.0,
+        additional_destinations=tuple(sorted(broadcasts)),
+    )

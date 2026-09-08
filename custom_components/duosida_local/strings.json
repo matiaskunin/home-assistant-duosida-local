@@ -18,12 +18,12 @@
       "manual": {
         "title": "Manual setup",
         "description": "The integration verifies TCP connectivity and reads the charger identifier before saving.",
-        "data": {"host": "Host or IP address", "port": "TCP port"}
+        "data": {"host": "Host or IP address", "port": "TCP port", "energy_offset": "Lifetime energy offset (kWh)"}
       },
       "reconfigure": {
         "title": "Reconfigure Duosida Local",
-        "description": "Change the network address. The charger identifier must match the existing device.",
-        "data": {"host": "Host or IP address", "port": "TCP port"}
+        "description": "Change the network address or calibrate lifetime energy. The charger identifier must match the existing device.",
+        "data": {"host": "Host or IP address", "port": "TCP port", "energy_offset": "Lifetime energy offset (kWh)"}
       }
     },
     "error": {

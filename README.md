@@ -42,11 +42,11 @@ and installs the pinned library requirement.
 |---|---|---|
 | State | Sensor | Raw code also available as disabled diagnostic |
 | Voltage / current / power | Sensors | Push telemetry |
-| Total / session energy | Sensors | kWh |
-| Station temperature | Sensor | °C |
-| Vehicle connected / charging | Binary sensors | Derived from verified state codes |
+| Total / session energy | Sensors | Local kWh register; optional lifetime offset |
+| Station temperature | Sensor | Native °C; display unit follows Home Assistant |
+| Vehicle connected / charging | Binary sensors | Connection uses the measured CP voltage |
 | Start / stop charging | Buttons | Require observed state confirmation |
-| Maximum current | Number, 6–32 A | Assumed state; write-only protocol |
+| Maximum current | Number, 6–32 A | Assumed state; decimal write-only protocol |
 | CP voltage | Disabled diagnostic sensor | Useful for protocol validation |
 | Identifier / model / manufacturer / firmware | Disabled diagnostic sensors | Static technical data |
 
@@ -71,7 +71,8 @@ and [troubleshooting](docs/troubleshooting.md). Architecture and safe automation
 examples are documented in [architecture](docs/architecture.md) and
 [automations](docs/automations.md). Research references and clean-room boundaries
 are listed in [sources](docs/sources.md); release changes are in the
-[changelog](CHANGELOG.md).
+[changelog](CHANGELOG.md). Sanitized real-device findings are recorded in the
+[physical validation reports](docs/validation/2026-09-07-first-home-assistant-test.md).
 
 ## Remove
 

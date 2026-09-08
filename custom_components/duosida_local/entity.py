@@ -17,6 +17,7 @@ class DuosidaEntity(CoordinatorEntity[DuosidaCoordinator]):
 
     def __init__(self, entry: DuosidaConfigEntry, key: str) -> None:
         super().__init__(entry.runtime_data.coordinator)
+        self._entry = entry
         identity = entry.runtime_data.identity
         self._attr_unique_id = f"{identity.device_id}_{key}"
         self._attr_device_info = DeviceInfo(

@@ -3,6 +3,7 @@
 - [Home Assistant integration quality scale](https://developers.home-assistant.io/docs/core/integration-quality-scale/)
 - [Home Assistant quality-scale rules](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/)
 - [Home Assistant integration manifest](https://developers.home-assistant.io/docs/creating_integration_manifest/)
+- [Home Assistant sensor units and user overrides](https://developers.home-assistant.io/docs/core/entity/sensor/)
 - [HACS integration publishing requirements](https://hacs.xyz/docs/publish/integration/)
 - [HACS validation action](https://hacs.xyz/docs/publish/action/)
 - [`duosida-local`](https://github.com/matiaskunin/duosida-local) for the local

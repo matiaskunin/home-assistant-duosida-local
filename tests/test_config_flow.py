@@ -3,11 +3,12 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from custom_components.duosida_local.config_flow import _async_probe
-from custom_components.duosida_local.const import DOMAIN
+from custom_components.duosida_local.config_flow import _async_discover_chargers, _async_probe
+from custom_components.duosida_local.const import CONF_ENERGY_OFFSET, DOMAIN
 from homeassistant.config_entries import SOURCE_RECONFIGURE
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from duosida_local import (
@@ -34,6 +35,14 @@ async def test_user_menu(hass) -> None:
     assert result["menu_options"] == ["discover", "manual"]
 
 
+async def test_network_dependency_loads_before_config_flow(hass) -> None:
+    """The manifest dependency used by discovery is available before setup."""
+
+    assert await async_setup_component(hass, "network", {})
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    assert result["type"] is FlowResultType.MENU
+
+
 async def test_manual_success(hass, identity) -> None:
     with patch(
         "custom_components.duosida_local.config_flow._async_probe",
@@ -45,7 +54,11 @@ async def test_manual_success(hass, identity) -> None:
         await hass.async_block_till_done()
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "Duosida DUOSIDA Mode3@32A"
-    assert result["data"] == {CONF_HOST: "192.0.2.10", CONF_PORT: 9988}
+    assert result["data"] == {
+        CONF_HOST: "192.0.2.10",
+        CONF_PORT: 9988,
+        CONF_ENERGY_OFFSET: 0.0,
+    }
 
 
 async def test_manual_connection_error(hass) -> None:
@@ -132,6 +145,7 @@ async def test_duplicate_updates_host(hass, identity) -> None:
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "already_configured"
     assert entry.data[CONF_HOST] == "192.0.2.10"
+    assert entry.data[CONF_ENERGY_OFFSET] == 0.0
 
 
 async def test_reconfigure_success_and_different_device(hass, identity) -> None:
@@ -152,6 +166,7 @@ async def test_reconfigure_success_and_different_device(hass, identity) -> None:
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
     assert entry.data[CONF_HOST] == "192.0.2.20"
+    assert entry.data[CONF_ENERGY_OFFSET] == 0.0
 
     other = identity.__class__("1111111111111111111", "Other", "UCHEN", "FW")
     with patch(
@@ -202,3 +217,32 @@ async def test_probe_always_disconnects(identity) -> None:
         assert await _async_probe("192.0.2.10", 9988) == identity
     constructor.assert_called_once_with("192.0.2.10", 9988)
     client.disconnect.assert_awaited_once()
+
+
+async def test_discovery_uses_enabled_adapter_broadcasts(hass) -> None:
+    adapters = [
+        {
+            "enabled": True,
+            "ipv4": [{"address": "192.0.2.10", "network_prefix": 24}],
+        },
+        {
+            "enabled": False,
+            "ipv4": [{"address": "198.51.100.10", "network_prefix": 24}],
+        },
+    ]
+    discovery = AsyncMock(return_value=())
+    with (
+        patch(
+            "custom_components.duosida_local.config_flow.network.async_get_adapters",
+            AsyncMock(return_value=adapters),
+        ),
+        patch(
+            "custom_components.duosida_local.config_flow.discover_chargers",
+            discovery,
+        ),
+    ):
+        assert await _async_discover_chargers(hass) == ()
+    discovery.assert_awaited_once_with(
+        timeout=4.0,
+        additional_destinations=("192.0.2.255",),
+    )
